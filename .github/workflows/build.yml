@@ -1,0 +1,19 @@
+name: Build Yocto Image
+on: [push]
+jobs:
+  build:
+    strategy:
+      matrix:
+        distro: [fsl-imx-fb, fsl-imx-wayland, fsl-imx-x11, fsl-imx-xwayland]
+        machine: [imx6ulevk, imx6ullevk, imx6ulz-14x14-evk]
+        target: [imx-image-core, imx-image-multimedia, imx-image-full]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - run: sudo apt-get install diffstat
+      - run: sed -i 's/read REPLY/REPLY=y/g' sources/base/setup-environment
+      - run: |
+          MACHINE=${{ matrix.machine }} DISTRO=${{ matrix.distro }} source ./imx-setup-release.sh -b build && \
+          bitbake ${{ matrix.target }}
+
